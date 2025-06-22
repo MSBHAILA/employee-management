@@ -96,9 +96,8 @@ public class Employee {
     @Column(name = "department")
     private String department;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "position")
-    private Position position;
+    private String position;
 
     @Column(name = "manager_id")
     private String managerId;
