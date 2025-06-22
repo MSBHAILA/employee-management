@@ -1,0 +1,180 @@
+package com.kaifan.emloyeeManagement.service.impl;
+
+import com.kaifan.emloyeeManagement.constants.EnumConstants.Position;
+import com.kaifan.emloyeeManagement.dto.EmployeeDto;
+import com.kaifan.emloyeeManagement.entity.Department;
+import com.kaifan.emloyeeManagement.entity.Employee;
+import com.kaifan.emloyeeManagement.mapper.EmployeeMapper;
+import com.kaifan.emloyeeManagement.repository.DepartmentRepository;
+import com.kaifan.emloyeeManagement.repository.EmployeeRepository;
+import com.kaifan.emloyeeManagement.repository.interfaces.DepartmentResponseDao;
+import com.kaifan.emloyeeManagement.service.EmployeeService;
+
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Objects;
+import java.util.Optional;
+
+@Service
+public class EmployeeServiceImpl implements EmployeeService {
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+
+    @Autowired
+    private EmployeeMapper employeeMapper;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Override
+    @Transactional
+    public EmployeeDto createEmployee(EmployeeDto employeeDto, MultipartFile photo) {
+        employeeDto.setEmployeeNumber(generateNextEmployeeNumber());
+
+        // 1. Handle photo saving (e.g., file system, S3, etc.)
+        if (photo != null && !photo.isEmpty()) {
+            String photoUrl = savePhoto(photo, employeeDto.getEmployeeNumber()); // Custom method
+            employeeDto.setPhotoUrl(photoUrl);
+        }
+
+        // 2. Handle manager assignment based on position
+        Position position = Position.fromArabicName(employeeDto.getPosition().getName());
+        employeeDto.setPosition(position);
+        
+        // Check if position is HEAD_OF, DEPUTY, or MANAGER
+        String positionName = position.name();
+        if (positionName.startsWith("HEAD_OF") || positionName.startsWith("DEPUTY") || positionName.contains("MANAGER")) {
+            // Get the parent department's manager
+            Department department = departmentRepository.findByCode(employeeDto.getDepartment());
+            
+            if (department.getParentDepartment() != null && department.getParentDepartment().getManagerId() != null) {
+                // Assign parent department's manager
+                employeeDto.setManagerId(department.getParentDepartment().getManagerId());
+            }
+        } else if (employeeDto.getDepartment() != null) {
+            // For regular employees, assign current department's manager if exists
+            Department department = departmentRepository.findByCode(employeeDto.getDepartment());
+            if (department.getManagerId() != null) {
+                employeeDto.setManagerId(department.getManagerId());
+            }
+        }
+
+        // Assign manager name
+        if (employeeDto.getManagerId() != null) {
+            Employee manager = employeeRepository.findById(employeeDto.getManagerId()).orElse(null);
+            if (manager != null) {
+                employeeDto.setManagerName(manager.getFullNameAr());
+            }
+        }
+
+        // 3. Save employee
+        Employee savedEmployee = employeeRepository.save(employeeMapper.employeeDtoToEmployee(employeeDto));
+        return employeeMapper.employeeToEmployeeDto(savedEmployee);
+    }
+
+    private String savePhoto(MultipartFile photo, String employeeNumber) {
+        try {
+            String uploadsDir = "uploads/";
+            String fileExtension = Objects.requireNonNull(photo.getOriginalFilename())
+                    .substring(photo.getOriginalFilename().lastIndexOf('.'));
+            String filename = "employee_" + employeeNumber + fileExtension;
+
+            Path uploadPath = Paths.get(uploadsDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Path filePath = uploadPath.resolve(filename);
+            Files.copy(photo.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Return the path or URL
+            return "/uploads/" + filename;  // Or full URL if hosted
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to store file", e);
+        }
+    }
+
+
+    private String generateNextEmployeeNumber() {
+        // Get the current max number
+        Optional<Employee> last = employeeRepository.findTopByOrderByEmployeeNumberDesc();
+
+        int lastNumber = last.map(emp -> {
+            try {
+                return Integer.parseInt(emp.getEmployeeNumber());
+            } catch (NumberFormatException e) {
+                return 499; // fallback if format is invalid
+            }
+        }).orElse(499);
+
+        return String.valueOf(lastNumber + 1);
+    }
+
+    @Override
+    @Transactional
+    public EmployeeDto getEmployeeById(String id) {
+        Optional<Employee> employee = employeeRepository.findById(id);
+        if (employee.isPresent()) {
+            return employeeMapper.employeeToEmployeeDto(employee.get());
+        }
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public EmployeeDto updateEmployee(EmployeeDto employeeDto) {
+        // Check if employee exists
+        if (!employeeRepository.existsById(employeeDto.getId())) {
+            return null;
+        }
+        Employee employee = employeeMapper.employeeDtoToEmployee(employeeDto);
+        Employee updatedEmployee = employeeRepository.save(employee);
+        return employeeMapper.employeeToEmployeeDto(updatedEmployee);
+    }
+
+    @Override
+    @Transactional
+    public void deleteEmployee(String id) {
+        if (employeeRepository.existsById(id)) {
+            employeeRepository.deleteById(id);
+        }
+    }
+
+    // Implementing other methods from the interface with default implementation
+    @Override
+    public Page<EmployeeDto> getAllEmployees(Pageable pageable) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Page<EmployeeDto> searchEmployeesByName(String name, Pageable pageable) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Page<EmployeeDto> getEmployeesByDepartment(String department, Pageable pageable) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Page<EmployeeDto> getEmployeesByStatus(String status, Pageable pageable) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public Page<EmployeeDto> getEmployeesByManager(String managerId, Pageable pageable) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+}
