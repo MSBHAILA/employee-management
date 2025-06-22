@@ -96,8 +96,8 @@ public class Employee {
     @Column(name = "department")
     private String department;
 
-    @Column(name = "position")
-    private String position;
+    @Column(name = "position_id")
+    private String positionId;
 
     @Column(name = "manager_id")
     private String managerId;

@@ -43,15 +43,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             employeeDto.setPhotoUrl(photoUrl);
         }
 
-        // Assign manager name
-        if (employeeDto.getManagerId() != null) {
-            Employee manager = employeeRepository.findById(employeeDto.getManagerId()).orElse(null);
-            if (manager != null) {
-                employeeDto.setManagerName(manager.getFullNameAr());
-            }
-        }
-
-        // 3. Save employee
+        // 2. Save employee
         Employee savedEmployee = employeeRepository.save(employeeMapper.employeeDtoToEmployee(employeeDto));
         return employeeMapper.employeeToEmployeeDto(savedEmployee);
     }

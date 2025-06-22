@@ -39,9 +39,8 @@ public class EmployeeDto {
     private String laborSupportStatus;
     private String hrTitle;
     private String department;
-    private String position;
+    private String positionId;
     private String managerId;
-    private String managerName;
     private LocalDate employmentDate;
     private Integer previousServiceDuration = 0;
     private Integer restDays = 30;
@@ -52,6 +51,8 @@ public class EmployeeDto {
     private String barcode;
     private Boolean idCardPrinted = false;
     private String notes;
+    private String positionName;
+    private String managerName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
