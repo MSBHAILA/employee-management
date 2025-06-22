@@ -1,6 +1,5 @@
 package com.kaifan.emloyeeManagement.dto;
 
-import com.kaifan.emloyeeManagement.constants.EnumConstants.Position;
 import com.kaifan.emloyeeManagement.constants.EnumConstants.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,7 +39,7 @@ public class EmployeeDto {
     private String laborSupportStatus;
     private String hrTitle;
     private String department;
-    private Position position;
+    private String position;
     private String managerId;
     private String managerName;
     private LocalDate employmentDate;

@@ -1,13 +1,9 @@
 package com.kaifan.emloyeeManagement.service.impl;
 
-import com.kaifan.emloyeeManagement.constants.EnumConstants.Position;
 import com.kaifan.emloyeeManagement.dto.EmployeeDto;
-import com.kaifan.emloyeeManagement.entity.Department;
 import com.kaifan.emloyeeManagement.entity.Employee;
 import com.kaifan.emloyeeManagement.mapper.EmployeeMapper;
-import com.kaifan.emloyeeManagement.repository.DepartmentRepository;
 import com.kaifan.emloyeeManagement.repository.EmployeeRepository;
-import com.kaifan.emloyeeManagement.repository.interfaces.DepartmentResponseDao;
 import com.kaifan.emloyeeManagement.service.EmployeeService;
 
 import jakarta.transaction.Transactional;
@@ -35,8 +31,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeMapper employeeMapper;
 
-    @Autowired
-    private DepartmentRepository departmentRepository;
 
     @Override
     @Transactional
@@ -47,28 +41,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (photo != null && !photo.isEmpty()) {
             String photoUrl = savePhoto(photo, employeeDto.getEmployeeNumber()); // Custom method
             employeeDto.setPhotoUrl(photoUrl);
-        }
-
-        // 2. Handle manager assignment based on position
-        Position position = Position.fromArabicName(employeeDto.getPosition().getName());
-        employeeDto.setPosition(position);
-        
-        // Check if position is HEAD_OF, DEPUTY, or MANAGER
-        String positionName = position.name();
-        if (positionName.startsWith("HEAD_OF") || positionName.startsWith("DEPUTY") || positionName.contains("MANAGER")) {
-            // Get the parent department's manager
-            Department department = departmentRepository.findByCode(employeeDto.getDepartment());
-            
-            if (department.getParentDepartment() != null && department.getParentDepartment().getManagerId() != null) {
-                // Assign parent department's manager
-                employeeDto.setManagerId(department.getParentDepartment().getManagerId());
-            }
-        } else if (employeeDto.getDepartment() != null) {
-            // For regular employees, assign current department's manager if exists
-            Department department = departmentRepository.findByCode(employeeDto.getDepartment());
-            if (department.getManagerId() != null) {
-                employeeDto.setManagerId(department.getManagerId());
-            }
         }
 
         // Assign manager name

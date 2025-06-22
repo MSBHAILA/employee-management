@@ -1,6 +1,5 @@
 package com.kaifan.emloyeeManagement.entity;
 
-import com.kaifan.emloyeeManagement.constants.EnumConstants.Position;
 import com.kaifan.emloyeeManagement.constants.EnumConstants.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
