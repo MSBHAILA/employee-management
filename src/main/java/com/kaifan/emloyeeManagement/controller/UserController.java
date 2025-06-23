@@ -1,4 +1,4 @@
-package com.kaifan.emloyeeManagement.contorller;
+package com.kaifan.emloyeeManagement.controller;
 
 import com.kaifan.emloyeeManagement.service.UserService;
 import org.keycloak.admin.client.Keycloak;

@@ -1,4 +1,4 @@
-package com.kaifan.emloyeeManagement.contorller;
+package com.kaifan.emloyeeManagement.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

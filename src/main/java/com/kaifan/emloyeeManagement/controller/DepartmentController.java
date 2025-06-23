@@ -1,4 +1,4 @@
-package com.kaifan.emloyeeManagement.contorller;
+package com.kaifan.emloyeeManagement.controller;
 
 import com.kaifan.emloyeeManagement.constants.MessageConstants;
 import com.kaifan.emloyeeManagement.dto.DepartmentDto;
