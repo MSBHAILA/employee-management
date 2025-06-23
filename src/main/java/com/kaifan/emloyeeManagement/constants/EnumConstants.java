@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class EnumConstants {
 
     public enum Status {
-        ACTIVE, INACTIVE, ON_LEAVE, TERMINATED
+        ACTIVE, INACTIVE, ON_LEAVE, TERMINATED, PENDING, EXPIRED, COMPLETED
     }
 
 //    public enum Position {
