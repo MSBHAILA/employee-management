@@ -26,7 +26,7 @@ public class Position {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    private Long id;
+    private String id;
 
     // e.g., "Department Head", "General Manager"
     @Column(nullable = false, unique = true)

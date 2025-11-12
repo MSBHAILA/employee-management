@@ -1,8 +1,10 @@
 package com.kaifan.emloyeeManagement.service.impl;
 
 import com.kaifan.emloyeeManagement.dto.EmployeeDto;
+import com.kaifan.emloyeeManagement.entity.Department;
 import com.kaifan.emloyeeManagement.entity.Employee;
 import com.kaifan.emloyeeManagement.mapper.EmployeeMapper;
+import com.kaifan.emloyeeManagement.repository.DepartmentRepository;
 import com.kaifan.emloyeeManagement.repository.EmployeeRepository;
 import com.kaifan.emloyeeManagement.service.EmployeeService;
 
@@ -27,6 +29,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Autowired
     private EmployeeMapper employeeMapper;
@@ -43,8 +47,14 @@ public class EmployeeServiceImpl implements EmployeeService {
             employeeDto.setPhotoUrl(photoUrl);
         }
 
-        // 2. Save employee
-        Employee savedEmployee = employeeRepository.save(employeeMapper.employeeDtoToEmployee(employeeDto));
+        // 2. Set manager based on department if department is provided
+        if (employeeDto.getDepartment() != null && !employeeDto.getDepartment().isEmpty()) {
+            setManagerFromDepartment(employeeDto);
+        }
+
+        // 3. Save employee
+        Employee employee = employeeMapper.employeeDtoToEmployee(employeeDto);
+        Employee savedEmployee = employeeRepository.save(employee);
         return employeeMapper.employeeToEmployeeDto(savedEmployee);
     }
 
@@ -100,9 +110,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public EmployeeDto updateEmployee(EmployeeDto employeeDto) {
         // Check if employee exists
-        if (!employeeRepository.existsById(employeeDto.getId())) {
+        Optional<Employee> existingEmployeeOpt = employeeRepository.findById(employeeDto.getId());
+        if (existingEmployeeOpt.isEmpty()) {
             return null;
         }
+        
+        Employee existingEmployee = existingEmployeeOpt.get();
+        
+        // Check if department is being updated
+        boolean departmentChanged = employeeDto.getDepartment() != null && 
+                                  !employeeDto.getDepartment().equals(existingEmployee.getDepartment());
+        
+        // If department is changed or manager is not set, update manager from department
+        if ((departmentChanged || employeeDto.getManagerId() == null) && 
+            employeeDto.getDepartment() != null && !employeeDto.getDepartment().isEmpty()) {
+            setManagerFromDepartment(employeeDto);
+        }
+        
+        // Update the employee
         Employee employee = employeeMapper.employeeDtoToEmployee(employeeDto);
         Employee updatedEmployee = employeeRepository.save(employee);
         return employeeMapper.employeeToEmployeeDto(updatedEmployee);
@@ -140,5 +165,28 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Page<EmployeeDto> getEmployeesByManager(String managerId, Pageable pageable) {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+    
+    /**
+     * Sets the manager for an employee based on their department's manager
+     * @param employeeDto The employee DTO to update with the manager ID
+     */
+    private void setManagerFromDepartment(EmployeeDto employeeDto) {
+        try {
+            // Find the department by name
+            Department department = departmentRepository.findByName(employeeDto.getDepartment());
+            
+            // If department exists and has a manager, set it as the employee's manager
+            if (department != null && department.getManagerId() != null && !department.getManagerId().isEmpty()) {
+                // Don't set the manager if the employee is the manager of their own department
+                if (!department.getManagerId().equals(employeeDto.getId())) {
+                    employeeDto.setManagerId(department.getManagerId());
+                }
+            }
+        } catch (Exception e) {
+            // Log the error but don't fail the operation
+            // In a production environment, you might want to log this to a monitoring system
+            System.err.println("Error setting manager from department: " + e.getMessage());
+        }
     }
 }

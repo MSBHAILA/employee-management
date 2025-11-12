@@ -54,7 +54,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         if(null != existingDepartment) {
 //            If manager is changed for existing department, then update the manager for all employees in that department
             if(!departmentDto.getManagerId().equals(existingDepartment.getManagerId())) {
-                employeeRepository.updateManagerForDepartment(departmentDto.getManagerId(), existingDepartment.getName());
+                employeeRepository.updateManagerForDepartment(existingDepartment.getName(), departmentDto.getManagerId());
             }
             return departmentMapper.departmentToDepartmentDto(
                     departmentRepository.save(departmentMapper.departmentDtoToDepartment(departmentDto)));
