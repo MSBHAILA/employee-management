@@ -8,6 +8,18 @@ public class EnumConstants {
         ACTIVE, INACTIVE, ON_LEAVE, TERMINATED, PENDING, EXPIRED, COMPLETED
     }
 
+    public enum LeaveStatus {
+        SUBMITTED,
+        PENDING,
+        APPROVED,
+        REJECTED,
+        CANCELLED
+    }
+
+    public enum ApprovalDecision {
+        APPROVED,
+        REJECTED
+    }
 //    public enum Position {
 //        HEAD_OF_COMPUTER_DEPARTMENT("رئيس قسم الحاسبات"),
 //        HEAD_OF_ACCOUNTING_DEPARTMENT("رئيس قسم الحسابات"),

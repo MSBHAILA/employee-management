@@ -35,15 +35,13 @@ public class EmployeeController {
     /**
      * Create a new employee.
      *
-     * @param employeeDtoJson the employee to create
+     * @param employeeDto the employee to create
      * @return the created employee
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseDto createEmployee(
-            @RequestPart("employeeDto") String employeeDtoJson,
+            @RequestPart("employeeDto") EmployeeDto employeeDto,
             @RequestPart(value = "photo", required = false) MultipartFile photo) throws JsonProcessingException {
-
-        EmployeeDto employeeDto = objectMapper.readValue(employeeDtoJson, EmployeeDto.class);
         EmployeeDto createdEmployee = employeeService.createEmployee(employeeDto, photo);
         if (createdEmployee != null) {
             return new ResponseDto(true, createdEmployee, MessageConstants.RECORD_CREATED_SUCCESSFULLY);
