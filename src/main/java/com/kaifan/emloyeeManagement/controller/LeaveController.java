@@ -20,8 +20,8 @@ public class LeaveController {
     private LeaveService leaveService;
 
     @PostMapping
-    public ResponseEntity<?> submit(@RequestParam("employeeId") String employeeId, @RequestBody LeaveRequestDto dto) {
-        LeaveRequest lr = leaveService.submitLeave(employeeId, dto);
+    public ResponseEntity<?> submit(@RequestParam("employeeId") String employeeId, @RequestBody LeaveRequestDto dto) throws Exception {
+        LeaveRequest lr = leaveService.submitLeave(dto);
         return ResponseEntity.created(URI.create("/api/leaves/" + lr.getId())).body(lr);
     }
 

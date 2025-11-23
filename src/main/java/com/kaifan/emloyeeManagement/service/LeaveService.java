@@ -7,9 +7,9 @@ import com.kaifan.emloyeeManagement.entity.LeaveRequest;
 import java.util.List;
 
 public interface LeaveService {
-    LeaveRequest submitLeave(String employeeId, LeaveRequestDto dto);
-    LeaveRequest approve(String leaveRequestId, LeaveApprovalDto dto);
-    LeaveRequest reject(String leaveRequestId, LeaveApprovalDto dto);
+    LeaveRequest submitLeave(LeaveRequestDto dto) throws Exception;
+    LeaveRequest approve(String leaveRequestId, LeaveApprovalDto dto) throws Exception;
+    LeaveRequest reject(String leaveRequestId, LeaveApprovalDto dto) throws Exception;
     List<LeaveRequest> getRequestsForEmployee(String employeeId);
     LeaveRequest getById(String id);
 }
