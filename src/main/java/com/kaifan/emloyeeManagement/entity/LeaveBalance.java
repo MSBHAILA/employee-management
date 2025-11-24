@@ -46,7 +46,7 @@ public class LeaveBalance {
     private Integer remainingDays;  // Available = totalDays - usedDays - reservedDays
 
     @Column(nullable = false)
-    private Integer reservedDays;  // Reserved for future use
+    private Integer reservedDays;
 
     // For carry-forward tracking
     @Column

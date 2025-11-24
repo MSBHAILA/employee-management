@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -33,4 +34,7 @@ public class LeaveApproval {
 
     @CreationTimestamp
     private LocalDateTime actionAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }
