@@ -471,14 +471,6 @@ public class LeaveServiceImpl implements LeaveService {
                 newBalance.setCarriedForwardDays(carriedDays);
                 newBalance.setTotalDays(newBalance.getTotalDays() + carriedDays);
                 newBalance.setRemainingDays(newBalance.getRemainingDays() + carriedDays);
-
-                // Set expiry date if configured (e.g., Q1 end)
-                if (leaveType.getCarryForwardExpiryMonths() != null) {
-                    LocalDate expiryDate = LocalDate.of(year, 1, 1)
-                            .plusMonths(leaveType.getCarryForwardExpiryMonths())
-                            .minusDays(1);
-//                    newBalance.setExpiryDate(expiryDate);
-                }
             }
         }
     }

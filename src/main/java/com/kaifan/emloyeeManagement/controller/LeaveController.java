@@ -1,50 +1,113 @@
 package com.kaifan.emloyeeManagement.controller;
 
+import com.kaifan.emloyeeManagement.constants.MessageConstants;
 import com.kaifan.emloyeeManagement.dto.LeaveApprovalDto;
 import com.kaifan.emloyeeManagement.dto.LeaveRequestDto;
+import com.kaifan.emloyeeManagement.dto.ResponseDto;
 import com.kaifan.emloyeeManagement.entity.LeaveRequest;
 import com.kaifan.emloyeeManagement.service.LeaveService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * REST controller for managing leave requests.
+ */
 @RestController
-@RequestMapping("/api/leaves")
+@RequestMapping("/leaves")
 public class LeaveController {
 
     @Autowired
     private LeaveService leaveService;
 
-    @PostMapping
-    public ResponseEntity<?> submit(@RequestParam("employeeId") String employeeId, @RequestBody LeaveRequestDto dto) throws Exception {
-        LeaveRequest lr = leaveService.submitLeave(dto);
-        return ResponseEntity.created(URI.create("/api/leaves/" + lr.getId())).body(lr);
+    /**
+     * Submit a new leave request.
+     *
+     * @param dto the leave request details
+     * @return the created leave request
+     */
+    @PostMapping(path = "/submit")
+    public ResponseDto submitLeave(@RequestBody LeaveRequestDto dto) {
+        try {
+            LeaveRequest leaveRequest = leaveService.submitLeave(dto);
+            return new ResponseDto(true, leaveRequest, MessageConstants.RECORD_CREATED_SUCCESSFULLY);
+        } catch (Exception e) {
+            return new ResponseDto(false, null, e.getMessage());
+        }
     }
 
+    /**
+     * Approve a leave request.
+     *
+     * @param id  the ID of the leave request
+     * @param dto the approval details
+     * @return the approved leave request
+     */
     @PostMapping("/{id}/approve")
-    public ResponseEntity<?> approve(@PathVariable("id") String id, @RequestBody LeaveApprovalDto dto) {
-        LeaveRequest lr = leaveService.approve(id, dto);
-        return ResponseEntity.ok(lr);
+    public ResponseDto approveLeaveRequest(
+            @PathVariable String id,
+            @RequestBody LeaveApprovalDto dto) {
+        try {
+            LeaveRequest leaveRequest = leaveService.approve(id, dto);
+            return new ResponseDto(true, leaveRequest, MessageConstants.RECORD_UPDATED_SUCCESSFULLY);
+        } catch (Exception e) {
+            return new ResponseDto(false, null, e.getMessage());
+        }
     }
 
+    /**
+     * Reject a leave request.
+     *
+     * @param id  the ID of the leave request
+     * @param dto the rejection details
+     * @return the rejected leave request
+     */
     @PostMapping("/{id}/reject")
-    public ResponseEntity<?> reject(@PathVariable("id") String id, @RequestBody LeaveApprovalDto dto) {
-        LeaveRequest lr = leaveService.reject(id, dto);
-        return ResponseEntity.ok(lr);
+    public ResponseDto rejectLeaveRequest(
+            @PathVariable String id,
+            @RequestBody LeaveApprovalDto dto) {
+        try {
+            LeaveRequest leaveRequest = leaveService.reject(id, dto);
+            return new ResponseDto(true, leaveRequest, MessageConstants.RECORD_UPDATED_SUCCESSFULLY);
+        } catch (Exception e) {
+            return new ResponseDto(false, null, e.getMessage());
+        }
     }
 
+    /**
+     * Get all leave requests for an employee.
+     *
+     * @param employeeId the ID of the employee
+     * @return list of leave requests
+     */
     @GetMapping("/employee/{employeeId}")
-    public ResponseEntity<List<LeaveRequest>> byEmployee(@PathVariable String employeeId) {
-        List<LeaveRequest> list = leaveService.getRequestsForEmployee(employeeId);
-        return ResponseEntity.ok(list);
+    public ResponseDto getLeaveRequestsByEmployee(@PathVariable String employeeId) {
+        try {
+            List<LeaveRequest> leaveRequests = leaveService.getRequestsForEmployee(employeeId);
+            return new ResponseDto(true, leaveRequests, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
+        } catch (Exception e) {
+            return new ResponseDto(false, null, e.getMessage());
+        }
     }
 
+    /**
+     * Get a leave request by ID.
+     *
+     * @param id the ID of the leave request
+     * @return the leave request
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<LeaveRequest> get(@PathVariable String id) {
-        return ResponseEntity.ok(leaveService.getById(id));
+    public ResponseDto getLeaveRequestById(@PathVariable String id) {
+        try {
+            LeaveRequest leaveRequest = leaveService.getById(id);
+            if (leaveRequest != null) {
+                return new ResponseDto(true, leaveRequest, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
+            } else {
+                return new ResponseDto(false, null, MessageConstants.RECORD_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseDto(false, null, e.getMessage());
+        }
     }
 }
