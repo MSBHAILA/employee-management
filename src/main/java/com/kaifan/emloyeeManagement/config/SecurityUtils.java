@@ -1,14 +1,20 @@
 package com.kaifan.emloyeeManagement.config;
 
+import com.kaifan.emloyeeManagement.entity.Employee;
+import com.kaifan.emloyeeManagement.repository.EmployeeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class SecurityUtils {
 
-    public static Long getCurrentUserId() throws Exception {
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    public Long getCurrentUserId() throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new Exception("User not authenticated");
@@ -19,20 +25,28 @@ public class SecurityUtils {
         return Long.valueOf(jwtAuth.getToken().getClaimAsString("userId"));
     }
 
-    public static boolean hasRole(String role) {
+    public boolean hasRole(String role) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals(role));
     }
 
-    public static String getCurrentEmployeeId() throws Exception {
+    public String getCurrentEmployeeId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new Exception("User not authenticated");
+        if (authentication == null || !authentication.isAuthenticated() || !(authentication instanceof JwtAuthenticationToken)) {
+            throw new SecurityException("User not authenticated or invalid authentication type");
         }
 
-        // Assuming JWT contains userId
         JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) authentication;
-        return jwtAuth.getToken().getClaimAsString("employeeId");
+        String preferredUsername = jwtAuth.getToken().getClaimAsString("preferred_username");
+
+        if (preferredUsername == null) {
+            throw new SecurityException("preferred_username claim not found in token");
+        }
+
+        return employeeRepository.findByAdUsername(preferredUsername)
+                .map(Employee::getId)
+                .orElseThrow(() -> new SecurityException("No employee found with AD username: " + preferredUsername));
     }
 }
+

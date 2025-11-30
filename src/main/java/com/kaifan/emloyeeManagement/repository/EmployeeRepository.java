@@ -21,4 +21,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, String> {
     @Query(value = "UPDATE employee e SET e.manager_id = :managerId WHERE e.department = :departmentName", nativeQuery = true)
     void updateManagerForDepartment(@Param("departmentName") String departmentName, @Param("managerId") String managerId);
 
+    Optional<Employee> findByAdUsername(String adUsername);
+
 }

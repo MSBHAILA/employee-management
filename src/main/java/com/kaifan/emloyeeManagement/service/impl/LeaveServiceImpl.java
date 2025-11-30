@@ -38,12 +38,15 @@ public class LeaveServiceImpl implements LeaveService {
     @Autowired
     private LeaveApprovalRepository leaveApprovalRepository;
 
+    @Autowired
+    private SecurityUtils securityUtils;
+
 
     @Override
     @Transactional
     public LeaveRequest submitLeave(LeaveRequestDto dto) throws Exception {
         // Get employee from JWT token (security fix)
-        String employeeId = SecurityUtils.getCurrentEmployeeId();
+        String employeeId = securityUtils.getCurrentEmployeeId();
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new NoSuchElementException("Employee not found"));
 
@@ -117,7 +120,7 @@ public class LeaveServiceImpl implements LeaveService {
                 .orElseThrow(() -> new NoSuchElementException("Leave request not found"));
 
         // Get approver from JWT token (security fix)
-        String approverId = SecurityUtils.getCurrentEmployeeId();
+        String approverId = securityUtils.getCurrentEmployeeId();
         Employee approver = employeeRepository.findById(approverId)
                 .orElseThrow(() -> new NoSuchElementException("Approver not found"));
 
@@ -178,7 +181,7 @@ public class LeaveServiceImpl implements LeaveService {
                 .orElseThrow(() -> new NoSuchElementException("Leave request not found"));
 
         // Get approver from JWT token (security fix)
-        String approverId = SecurityUtils.getCurrentEmployeeId();
+        String approverId = securityUtils.getCurrentEmployeeId();
         Employee approver = employeeRepository.findById(approverId)
                 .orElseThrow(() -> new NoSuchElementException("Approver not found"));
 

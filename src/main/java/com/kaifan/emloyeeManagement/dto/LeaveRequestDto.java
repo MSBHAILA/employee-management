@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class LeaveRequestDto {
     private String leaveTypeId;
+    private String leaveTypeCode;
     private LocalDate startDate;
     private LocalDate endDate;
     private String substituteEmployeeId;
