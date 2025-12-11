@@ -48,5 +48,22 @@ public class SecurityUtils {
                 .map(Employee::getId)
                 .orElseThrow(() -> new SecurityException("No employee found with AD username: " + preferredUsername));
     }
+
+    public Employee getCurrentEmployee() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || !(authentication instanceof JwtAuthenticationToken)) {
+            throw new SecurityException("User not authenticated or invalid authentication type");
+        }
+
+        JwtAuthenticationToken jwtAuth = (JwtAuthenticationToken) authentication;
+        String preferredUsername = jwtAuth.getToken().getClaimAsString("preferred_username");
+
+        if (preferredUsername == null) {
+            throw new SecurityException("preferred_username claim not found in token");
+        }
+
+        return employeeRepository.findByAdUsername(preferredUsername)
+                .orElseThrow(() -> new SecurityException("No employee found with AD username: " + preferredUsername));
+    }
 }
 
