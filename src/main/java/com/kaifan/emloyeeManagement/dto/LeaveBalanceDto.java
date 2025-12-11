@@ -14,9 +14,23 @@ import lombok.Setter;
 public class LeaveBalanceDto {
     private String id;
 
-    private Employee employee;
+    private String employee;
 
-    private LeaveType leaveType;
+    private String leaveType;
 
-    private Integer remainingDays;
+    private String year;
+
+    private String totalDays;
+
+    private String usedDays;
+
+    private String remainingDays;
+
+    private String reservedDays;
+
+    private String carriedForwardDays;
+
+    private String createdAt;
+
+    private String updatedAt;
 }
