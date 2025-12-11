@@ -86,4 +86,8 @@ public interface EmployeeService {
      * @return page of employee DTOs managed by the specified manager
      */
     Page<EmployeeDto> getEmployeesByManager(String managerId, Pageable pageable);
+
+    EmployeeDto getEmployeeByAdUsername(String adUsername);
+
+    EmployeeDto getEmployee();
 }

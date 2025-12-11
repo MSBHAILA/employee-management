@@ -7,7 +7,12 @@ import com.kaifan.emloyeeManagement.dto.EmployeeDto;
 import com.kaifan.emloyeeManagement.dto.ResponseDto;
 import com.kaifan.emloyeeManagement.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +23,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 /**
  * REST controller for managing employees.
@@ -49,6 +60,15 @@ public class EmployeeController {
         return new ResponseDto(false, null, MessageConstants.RECORD_ALREADY_EXISTS);
     }
 
+    @GetMapping("/me")
+    public ResponseDto getEmployee() {
+        EmployeeDto employeeDto = employeeService.getEmployee();
+        if (employeeDto != null) {
+            return new ResponseDto(true, employeeDto, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
+        }
+        return new ResponseDto(false, null, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
+    }
+
 
     /**
      * Get an employee by ID.
@@ -64,6 +84,16 @@ public class EmployeeController {
         }
         return new ResponseDto(false, null, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
     }
+
+    @GetMapping("/adUsername/{adUsername}")
+    public ResponseDto getEmployeeByAdUsername(@PathVariable String adUsername) {
+        EmployeeDto employeeDto = employeeService.getEmployeeByAdUsername(adUsername);
+        if (employeeDto != null) {
+            return new ResponseDto(true, employeeDto, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
+        }
+        return new ResponseDto(false, null, MessageConstants.RECORD_RETRIEVED_SUCCESSFULLY);
+    }
+
 
     /**
      * Update an existing employee.
@@ -90,5 +120,31 @@ public class EmployeeController {
     public ResponseDto deleteEmployee(@PathVariable String id) {
         employeeService.deleteEmployee(id);
         return new ResponseDto(true, null, MessageConstants.RECORD_DELETED_SUCCESSFULLY);
+    }
+
+    @GetMapping("/photo/uploads/{filename:.+}")
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get("uploads").resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists() || !resource.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Determine content type
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .cacheControl(CacheControl.maxAge(10, TimeUnit.HOURS).cachePublic())
+                    .body(resource);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

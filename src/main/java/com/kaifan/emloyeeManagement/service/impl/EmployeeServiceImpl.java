@@ -1,5 +1,6 @@
 package com.kaifan.emloyeeManagement.service.impl;
 
+import com.kaifan.emloyeeManagement.config.SecurityUtils;
 import com.kaifan.emloyeeManagement.dto.EmployeeDto;
 import com.kaifan.emloyeeManagement.entity.Department;
 import com.kaifan.emloyeeManagement.entity.Employee;
@@ -34,6 +35,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeMapper employeeMapper;
+
+    @Autowired
+    private SecurityUtils securityUtils;
 
 
     @Override
@@ -189,4 +193,20 @@ public class EmployeeServiceImpl implements EmployeeService {
             System.err.println("Error setting manager from department: " + e.getMessage());
         }
     }
+
+    @Override
+    public EmployeeDto getEmployeeByAdUsername(String adUsername) {
+        Optional<Employee> employee = employeeRepository.findByAdUsername(adUsername);
+        if (employee.isPresent()) {
+            return employeeMapper.employeeToEmployeeDto(employee.get());
+        }
+        return null;
+    }
+
+    @Override
+    public EmployeeDto getEmployee() {
+        return employeeMapper.employeeToEmployeeDto(securityUtils.getCurrentEmployee());
+    }
+
+
 }
